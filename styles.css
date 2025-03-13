@@ -116,7 +116,7 @@ button:hover {
     margin-top: 2rem;
 }
 .day.selected-start {
-    background: #ffcc80; /* Light orange background */
+    background: #ffcc80; 
     border-radius: 50%;
     font-weight: bold;
 }
