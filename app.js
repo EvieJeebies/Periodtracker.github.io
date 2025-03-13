@@ -1,6 +1,6 @@
 const STORAGE_KEY = 'cycleTrackerData';
 let currentDate = new Date();
-let periodStartDate = null; // Temporary variable to track the start date of a period
+let periodStartDate = null;
 
 function getCookie(name) {
     const value = `; ${document.cookie}`;
@@ -14,7 +14,6 @@ function setCookie(name, value, days = 365) {
     document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
 }
 
-// Safely parse cookie data
 let calendarData;
 
 try {
@@ -31,7 +30,7 @@ function saveData() {
 
 function generateCalendar(date) {
     const calendar = document.getElementById('calendar');
-    console.log('Calendar element:', calendar); // Debugging
+    console.log('Calendar element:', calendar);
     if (!calendar) {
         console.error('Calendar element not found!');
         return;
@@ -47,21 +46,20 @@ function generateCalendar(date) {
     document.getElementById('currentMonth').textContent = 
         `${date.toLocaleString('default', { month: 'long' })} ${year}`;
 
-    // Add empty cells for days before the first day
+    
     for (let i = 0; i < firstDay.getDay(); i++) {
         const emptyDay = document.createElement('div');
         emptyDay.classList.add('day');
         calendar.appendChild(emptyDay);
     }
 
-    // Create days for the month
     for (let day = 1; day <= lastDay.getDate(); day++) {
         const dateStr = new Date(year, month, day).toISOString().split('T')[0];
         const dayElement = document.createElement('div');
         dayElement.classList.add('day');
         dayElement.textContent = day;
         
-        // Check if the date falls within any period
+        
         const isMarked = calendarData.some(period => 
             dateStr >= period.start && dateStr <= period.end
         );
@@ -70,67 +68,67 @@ function generateCalendar(date) {
             dayElement.classList.add('marked');
         }
 
-        // Highlight the start date if it's selected
+
         if (periodStartDate === dateStr) {
             dayElement.classList.add('selected-start');
         }
 
         dayElement.addEventListener('click', () => {
-            // Handle period selection
+            
             handlePeriodSelection(dateStr, dayElement);
         });
 
         calendar.appendChild(dayElement);
     }
 
-    console.log('Calendar generated successfully'); // Debugging
+    console.log('Calendar generated successfully'); 
 }
 
 function handlePeriodSelection(dateStr, dayElement) {
-    // Check if the clicked date is part of an existing period
+
     const periodIndex = calendarData.findIndex(period => 
         dateStr >= period.start && dateStr <= period.end
     );
 
     if (periodIndex !== -1) {
-        // If the date is part of a period, ask the user if they want to delete it
+        
         const period = calendarData[periodIndex];
         const confirmDelete = confirm(`Do you want to delete the period from ${formatDate(new Date(period.start))} to ${formatDate(new Date(period.end))}?`);
 
         if (confirmDelete) {
-            // Remove the period from calendarData
+            
             calendarData.splice(periodIndex, 1);
 
-            // Save data and update the calendar
+            
             saveData();
             generateCalendar(currentDate);
             updatePredictions();
         }
     } else if (!periodStartDate) {
-        // If no start date is selected, set the clicked date as the start date
+        
         periodStartDate = dateStr;
-        dayElement.classList.add('selected-start'); // Highlight the start date
+        dayElement.classList.add('selected-start'); 
     } else {
-        // If a start date is already selected, set the clicked date as the end date
+        
         const startDate = new Date(periodStartDate);
         const endDate = new Date(dateStr);
 
         if (endDate < startDate) {
-            // If the end date is before the start date, swap them
+            
             [startDate, endDate] = [endDate, startDate];
         }
 
-        // Add the period to calendarData
+        
         calendarData.push({
             start: startDate.toISOString().split('T')[0],
             end: endDate.toISOString().split('T')[0]
         });
 
-        // Reset the start date and remove the highlight
+        
         periodStartDate = null;
         generateCalendar(currentDate);
 
-        // Save data and update the calendar
+
         saveData();
         updatePredictions();
     }
@@ -174,7 +172,6 @@ function formatDate(date) {
     return date ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-';
 }
 
-// Add export functionality
 document.getElementById('exportData').addEventListener('click', exportToExcel);
 
 function exportToExcel() {
@@ -190,15 +187,14 @@ function exportToExcel() {
     XLSX.writeFile(workbook, 'cycle_data.xlsx');
 }
 
-// Clear All Data functionality
 document.getElementById('clearData').addEventListener('click', () => {
-    calendarData = []; // Clear the calendarData array
-    saveData(); // Save the empty array to the cookie
-    generateCalendar(currentDate); // Regenerate the calendar
-    updatePredictions(); // Update predictions
+    calendarData = []; 
+    saveData(); 
+    generateCalendar(currentDate); 
+    updatePredictions(); 
 });
 
-// Month switching functionality
+
 document.getElementById('prevMonth').addEventListener('click', () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
     generateCalendar(currentDate);
@@ -211,7 +207,7 @@ document.getElementById('nextMonth').addEventListener('click', () => {
     updatePredictions();
 });
 
-// Initialization
+
 document.addEventListener('DOMContentLoaded', () => {
     generateCalendar(currentDate);
     updatePredictions();
